@@ -228,6 +228,16 @@ function generateJobId() {
   return 'job_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
+// Strip citation tags from AI responses
+function stripCitations(text) {
+  if (!text) return text;
+  return text
+    .replace(/<cite[^>]*>/gi, '')
+    .replace(/<\/cite>/gi, '')
+    .replace(/]*>/gi, '')
+    .replace(/<\/antml:cite>/gi, '');
+}
+
 // ============================================
 // CATEGORY DETERMINATION LOGIC
 // ============================================
@@ -894,7 +904,9 @@ function ResourceDetailModal({ isOpen, onClose, resource, categoryName, location
 
   const renderSummary = (text) => {
     if (!text) return null;
-    const lines = text.split('\n');
+    // Strip citations from the full text first
+    const cleanText = stripCitations(text);
+    const lines = cleanText.split('\n');
     return lines.map((line, idx) => {
       const trimmed = line.trim();
       if (!trimmed) return null;
@@ -926,8 +938,8 @@ function ResourceDetailModal({ isOpen, onClose, resource, categoryName, location
       <div className="resource-detail-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title-area">
-            <h2>{resource.name}</h2>
-            {resource.type && <span className="modal-resource-type">{resource.type}</span>}
+            <h2>{stripCitations(resource.name)}</h2>
+            {resource.type && <span className="modal-resource-type">{stripCitations(resource.type)}</span>}
           </div>
           <button onClick={onClose} className="modal-close">×</button>
         </div>
@@ -938,13 +950,13 @@ function ResourceDetailModal({ isOpen, onClose, resource, categoryName, location
               {resource.description && (
                 <div className="detail-section">
                   <h3>Overview</h3>
-                  <p>{resource.description}</p>
+                  <p>{stripCitations(resource.description)}</p>
                 </div>
               )}
               {resource.notes && (
                 <div className="detail-section">
                   <h3>Notes</h3>
-                  <p>{resource.notes}</p>
+                  <p>{stripCitations(resource.notes)}</p>
                 </div>
               )}
             </div>
@@ -1272,13 +1284,13 @@ function App() {
               {searchResults.introduction && (
                 <div className="results-intro-card">
                   <h2>What We Found</h2>
-                  <p>{searchResults.introduction}</p>
+                  <p>{stripCitations(searchResults.introduction)}</p>
                 </div>
               )}
               
               {searchResults.categories?.map((cat, idx) => (
                 <div key={idx} className="results-category">
-                  <h2>{cat.name}</h2>
+                  <h2>{stripCitations(cat.name)}</h2>
                   <div className="resources-grid">
                     {cat.resources?.map((resource, ridx) => {
                       const isValidPhone = (phone) => {
@@ -1294,15 +1306,15 @@ function App() {
                       return (
                         <div key={ridx} className="resource-card">
                           <div className="resource-card-header">
-                            <h3>{resource.name}</h3>
-                            {resource.type && <span className="resource-type-badge">{resource.type}</span>}
+                            <h3>{stripCitations(resource.name)}</h3>
+                            {resource.type && <span className="resource-type-badge">{stripCitations(resource.type)}</span>}
                           </div>
-                          <p className="resource-description">{resource.description}</p>
-                          {resource.notes && <p className="resource-notes">{resource.notes}</p>}
+                          <p className="resource-description">{stripCitations(resource.description)}</p>
+                          {resource.notes && <p className="resource-notes">{stripCitations(resource.notes)}</p>}
                           <div className="resource-actions">
                             <button onClick={() => openDetailModal(resource, cat.name)} className="resource-detail-btn">More Detail</button>
                             {resource.url && <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">Visit Website →</a>}
-                            {isValidPhone(resource.phone) && <a href={`tel:${resource.phone.replace(/\s/g, '')}`} className="resource-phone">{resource.phone}</a>}
+                            {isValidPhone(resource.phone) && <a href={`tel:${resource.phone.replace(/\s/g, '')}`} className="resource-phone">{stripCitations(resource.phone)}</a>}
                           </div>
                         </div>
                       );
@@ -1313,7 +1325,7 @@ function App() {
               
               {searchResults.additionalNotes && (
                 <div className="results-notes">
-                  <p>{searchResults.additionalNotes}</p>
+                  <p>{stripCitations(searchResults.additionalNotes)}</p>
                 </div>
               )}
               
