@@ -825,6 +825,10 @@ function ContactPage() {
         <form className="contact-form" name="contact" method="POST" data-netlify="true">
           <input type="hidden" name="form-name" value="contact" />
           <div className="form-group">
+            <label htmlFor="name">Your name (optional)</label>
+            <input type="text" id="name" name="name" />
+          </div>
+          <div className="form-group">
             <label htmlFor="email">Your email (optional)</label>
             <input type="email" id="email" name="email" />
           </div>
@@ -834,6 +838,159 @@ function ContactPage() {
           </div>
           <button type="submit" className="primary-button">Send Message</button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// RESOURCE DETAIL MODAL
+// ============================================
+function ResourceDetailModal({ isOpen, onClose, resource, categoryName, location }) {
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (isOpen && resource && !summary) {
+      fetchDetails();
+    }
+  }, [isOpen, resource]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSummary(null);
+      setError(null);
+    }
+  }, [isOpen]);
+
+  const fetchDetails = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/.netlify/functions/resource-detail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: resource.url || null,
+          resourceName: resource.name,
+          resourceType: resource.type,
+          categoryName: categoryName,
+          location: location
+        })
+      });
+      const data = await response.json();
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setSummary(data.summary);
+      }
+    } catch (err) {
+      setError('Could not load additional details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderSummary = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, idx) => {
+      const trimmed = line.trim();
+      if (!trimmed) return null;
+      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+        return <h3 key={idx}>{trimmed.replace(/\*\*/g, '')}</h3>;
+      }
+      if (trimmed.startsWith('- ')) {
+        return <li key={idx}>{trimmed.substring(2)}</li>;
+      }
+      return <p key={idx}>{trimmed}</p>;
+    });
+  };
+
+  const isValidPhone = (phone) => {
+    if (!phone || phone.trim() === '') return false;
+    const lower = phone.toLowerCase();
+    if (lower.includes('not specified') || lower.includes('n/a') || 
+        lower.includes('contact') || lower.includes('website') ||
+        lower.includes('see ') || lower.includes('visit') || 
+        lower.includes('available')) return false;
+    if (!phone.match(/\d/)) return false;
+    return true;
+  };
+
+  if (!isOpen || !resource) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="resource-detail-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-title-area">
+            <h2>{resource.name}</h2>
+            {resource.type && <span className="modal-resource-type">{resource.type}</span>}
+          </div>
+          <button onClick={onClose} className="modal-close">×</button>
+        </div>
+
+        <div className="modal-body">
+          <div className="detail-summary">
+            <div className="detail-existing">
+              {resource.description && (
+                <div className="detail-section">
+                  <h3>Overview</h3>
+                  <p>{resource.description}</p>
+                </div>
+              )}
+              {resource.notes && (
+                <div className="detail-section">
+                  <h3>Notes</h3>
+                  <p>{resource.notes}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="detail-ai-section">
+              {loading && (
+                <div className="detail-loading-inline">
+                  <div className="detail-spinner-small"></div>
+                  <span>Getting more details...</span>
+                </div>
+              )}
+              {error && !summary && (
+                <div className="detail-error-inline">
+                  <span>{error}</span>
+                  <button onClick={fetchDetails} className="text-button">Try again</button>
+                </div>
+              )}
+              {summary && (
+                <div className="detail-content">
+                  <div className="ai-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    AI-Enhanced Details
+                  </div>
+                  {renderSummary(summary)}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          {resource.url && (
+            <a href={resource.url} target="_blank" rel="noopener noreferrer" className="primary-button">
+              Visit Website
+            </a>
+          )}
+          {isValidPhone(resource.phone) && (
+            <a href={`tel:${resource.phone.replace(/\s/g, '')}`} className="secondary-button">
+              {resource.phone}
+            </a>
+          )}
+          <button onClick={onClose} className="text-button">Close</button>
+        </div>
       </div>
     </div>
   );
@@ -861,6 +1018,17 @@ function App() {
   const [elapsedTime, setElapsedTime] = useState(0);
   
   const [highlightCategory, setHighlightCategory] = useState(null);
+
+  // Resource detail modal state
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailResource, setDetailResource] = useState(null);
+  const [detailCategoryName, setDetailCategoryName] = useState('');
+
+  const openDetailModal = (resource, categoryName) => {
+    setDetailResource(resource);
+    setDetailCategoryName(categoryName);
+    setDetailModalOpen(true);
+  };
 
   // Poll for search results
   useEffect(() => {
@@ -1112,20 +1280,33 @@ function App() {
                 <div key={idx} className="results-category">
                   <h2>{cat.name}</h2>
                   <div className="resources-grid">
-                    {cat.resources?.map((resource, ridx) => (
-                      <div key={ridx} className="resource-card">
-                        <div className="resource-card-header">
-                          <h3>{resource.name}</h3>
-                          {resource.type && <span className="resource-type-badge">{resource.type}</span>}
+                    {cat.resources?.map((resource, ridx) => {
+                      const isValidPhone = (phone) => {
+                        if (!phone || phone.trim() === '') return false;
+                        const lower = phone.toLowerCase();
+                        if (lower.includes('not specified') || lower.includes('n/a') || 
+                            lower.includes('contact') || lower.includes('website') ||
+                            lower.includes('see ') || lower.includes('visit') || 
+                            lower.includes('available')) return false;
+                        if (!phone.match(/\d/)) return false;
+                        return true;
+                      };
+                      return (
+                        <div key={ridx} className="resource-card">
+                          <div className="resource-card-header">
+                            <h3>{resource.name}</h3>
+                            {resource.type && <span className="resource-type-badge">{resource.type}</span>}
+                          </div>
+                          <p className="resource-description">{resource.description}</p>
+                          {resource.notes && <p className="resource-notes">{resource.notes}</p>}
+                          <div className="resource-actions">
+                            <button onClick={() => openDetailModal(resource, cat.name)} className="resource-detail-btn">More Detail</button>
+                            {resource.url && <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">Visit Website →</a>}
+                            {isValidPhone(resource.phone) && <a href={`tel:${resource.phone.replace(/\s/g, '')}`} className="resource-phone">{resource.phone}</a>}
+                          </div>
                         </div>
-                        <p className="resource-description">{resource.description}</p>
-                        {resource.notes && <p className="resource-notes">{resource.notes}</p>}
-                        <div className="resource-actions">
-                          {resource.url && <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">Visit Website</a>}
-                          {resource.phone && <a href={`tel:${resource.phone.replace(/\s/g, '')}`} className="resource-phone">{resource.phone}</a>}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -1141,6 +1322,13 @@ function App() {
               </div>
             </div>
           </main>
+          <ResourceDetailModal
+            isOpen={detailModalOpen}
+            onClose={() => setDetailModalOpen(false)}
+            resource={detailResource}
+            categoryName={detailCategoryName}
+            location={location}
+          />
         </div>
       );
     }
