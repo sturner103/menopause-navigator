@@ -10,7 +10,8 @@ const sections = [
   { id: 'impact', name: 'Overall Impact', questions: [19] },
   { id: 'medical', name: 'Medical Context', questions: [20] },
   { id: 'journey', name: 'Your Journey So Far', questions: [21, 22] },
-  { id: 'seeking', name: 'What You\'re Looking For', questions: [23] }
+  { id: 'seeking', name: 'What You\'re Looking For', questions: [23] },
+  { id: 'location', name: 'Where to Search', questions: [24] }
 ];
 
 const questions = [
@@ -105,7 +106,10 @@ const questions = [
     { value: 'nutrition', label: "Nutritional guidance" },
     { value: 'support-group', label: "Support groups or community" },
     { value: 'specific-symptom', label: "Help with a specific symptom that's really bothering me" }
-  ]}
+  ]},
+  
+  // Section 7: Location
+  { id: 24, section: 'location', text: "Where would you like to find support?", subtext: "Enter a city, region, or country. This can be for yourself or someone you're helping.", type: 'text', placeholder: "e.g., Auckland, NZ or Sydney, Australia" }
 ];
 
 const scaleOptions = [
@@ -202,25 +206,6 @@ const categoryContent = {
     ],
     color: "#9b7bb0"
   }
-};
-
-const crisisResources = {
-  nz: { name: "New Zealand", resources: [
-    { name: "Need to Talk?", phone: "1737", description: "Free call or text, 24/7" },
-    { name: "Lifeline", phone: "0800 543 354", description: "24/7 crisis support" }
-  ]},
-  au: { name: "Australia", resources: [
-    { name: "Lifeline", phone: "13 11 14", description: "24/7 crisis support" },
-    { name: "Beyond Blue", phone: "1300 22 4636", description: "Anxiety and depression support" }
-  ]},
-  uk: { name: "United Kingdom", resources: [
-    { name: "Samaritans", phone: "116 123", description: "Free, 24/7" },
-    { name: "Mind Infoline", phone: "0300 123 3393", description: "Mental health support" }
-  ]},
-  us: { name: "United States", resources: [
-    { name: "988 Suicide & Crisis Lifeline", phone: "988", description: "Call or text, 24/7" },
-    { name: "SAMHSA Helpline", phone: "1-800-662-4357", description: "Mental health referrals" }
-  ]}
 };
 
 // Generate unique job ID
@@ -394,49 +379,23 @@ function TopNav({ currentPage, onNavigate, onStartAssessment, inAssessment }) {
 }
 
 function ContextNav({ context, data }) {
-  if (context === 'results') {
-    return (
-      <div className="context-nav">
-        <div className="context-nav-container">
-          <div className="context-breadcrumb">
-            <span className="context-label">Your Results</span>
-            <span className="context-separator">→</span>
-            <span className="context-current">{data.categoryName}</span>
-          </div>
-          <div className="context-actions">
-            <button 
-              className={`context-tab ${data.view === 'results' ? 'active' : ''}`}
-              onClick={() => data.setView('results')}
-            >
-              Summary
-            </button>
-            <button 
-              className={`context-tab ${data.view === 'search' ? 'active' : ''}`}
-              onClick={() => data.setView('search')}
-            >
-              Find Resources
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (context === 'search') {
     return (
       <div className="context-nav">
         <div className="context-nav-container">
           <div className="context-breadcrumb">
-            <span className="context-label">Find Resources</span>
+            <span className="context-label">Your Resources</span>
             <span className="context-separator">→</span>
-            <span className="context-current">{data.location || 'Enter location'}</span>
+            <span className="context-current">{data.location || 'Searching...'}</span>
           </div>
-          <button onClick={data.onBack} className="context-back">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Back to Results
-          </button>
+          {data.onBack && (
+            <button onClick={data.onBack} className="context-back">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Start Over
+            </button>
+          )}
         </div>
       </div>
     );
@@ -554,16 +513,16 @@ function LandingPage({ onStartAssessment, onNavigate }) {
             <div className="process-card">
               <div className="process-icon">📝</div>
               <h4>Complete the Assessment</h4>
-              <p>22 questions about your symptoms, experience, and what you're looking for. Takes about 8 minutes.</p>
+              <p>24 questions about your symptoms, experience, and location. Takes about 8 minutes.</p>
             </div>
             <div className="process-card">
               <div className="process-icon">🔍</div>
-              <h4>Get Matched</h4>
-              <p>We search for menopause-trained GPs, specialists, and support services in your area.</p>
+              <h4>Get Your Report</h4>
+              <p>We immediately search for menopause-trained GPs, specialists, and support services in your area.</p>
             </div>
             <div className="process-card">
               <div className="process-icon">📋</div>
-              <h4>Save Your Report</h4>
+              <h4>Save Your Results</h4>
               <p>Download a personalized report with resources to explore at your own pace.</p>
             </div>
           </div>
@@ -645,15 +604,15 @@ function HowItWorksPage({ onStartAssessment }) {
               <div className="hiw-step-icon">📝</div>
               <div className="hiw-step-content">
                 <h4>Take the Assessment</h4>
-                <p>Answer 22 questions about your symptoms, medical history, and what you're looking for. Takes about 8 minutes.</p>
+                <p>Answer 24 questions about your symptoms, medical history, and where you'd like to find support. Takes about 8 minutes.</p>
               </div>
             </div>
             <div className="hiw-step-arrow">→</div>
             <div className="hiw-step-simple">
               <div className="hiw-step-icon">🔍</div>
               <div className="hiw-step-content">
-                <h4>Find Resources</h4>
-                <p>We build a personalized report of menopause-trained doctors, specialists, and support services in your area.</p>
+                <h4>Get Your Report</h4>
+                <p>We immediately build a personalized report of menopause-trained doctors, specialists, and support services in your area.</p>
               </div>
             </div>
           </div>
@@ -698,18 +657,16 @@ function HowItWorksPage({ onStartAssessment }) {
                 <li>A medical diagnosis or clinical assessment</li>
                 <li>A substitute for professional evaluation</li>
                 <li>Medical advice about HRT or treatments</li>
-                <li>An endorsement of any provider</li>
-                <li>A guarantee of provider availability</li>
+                <li>A guarantee of resource availability</li>
               </ul>
             </div>
             <div className="limitation-card is">
               <h3>This IS</h3>
               <ul>
-                <li>A navigation tool to help you explore options</li>
-                <li>A starting point for finding support</li>
-                <li>Validation that your symptoms are real</li>
-                <li>A personalized report from real-time sources</li>
-                <li>Free, private, and anonymous</li>
+                <li>A navigation tool to help you find resources</li>
+                <li>A way to identify your primary concerns</li>
+                <li>Information to start conversations with providers</li>
+                <li>A starting point, not a final answer</li>
               </ul>
             </div>
           </div>
@@ -723,57 +680,35 @@ function FoundationsPage() {
   return (
     <div className="content-page">
       <div className="page-content">
-        <h1>Foundations for Menopause Wellness</h1>
-        <p className="page-intro">While our search engine helps you find professional support, there are foundational lifestyle factors that can significantly impact how you feel during menopause.</p>
+        <h1>Menopause Foundations</h1>
+        <p className="page-intro">Before diving into finding specialists, there are some foundational approaches that help many women manage menopause symptoms. These aren't a replacement for medical care — they're a complement to it.</p>
         
         <section className="foundation-section">
-          <h2>🏋️ Resistance Training</h2>
-          <p>Strength training is one of the most impactful things you can do during menopause. It helps:</p>
-          <ul>
-            <li>Maintain muscle mass that naturally declines with age</li>
-            <li>Support bone density and reduce osteoporosis risk</li>
-            <li>Improve metabolic health and body composition</li>
-            <li>Boost mood and reduce anxiety</li>
-            <li>Improve sleep quality</li>
-          </ul>
-          <p><strong>Start simple:</strong> Even 2-3 sessions per week of basic strength exercises can make a significant difference.</p>
+          <h2>💪 Strength Training</h2>
+          <p>Resistance training becomes increasingly important during menopause. It helps maintain muscle mass, supports bone density, improves metabolism, and can reduce many symptoms including fatigue and mood changes.</p>
+          <p><strong>Start with:</strong> 2-3 sessions per week focusing on major muscle groups. Even bodyweight exercises count.</p>
         </section>
-
+        
         <section className="foundation-section">
-          <h2>🥗 Nutrition Focus</h2>
-          <p>What you eat affects how you feel. During menopause, consider:</p>
-          <ul>
-            <li><strong>Protein:</strong> Aim for adequate protein at each meal to support muscle maintenance</li>
-            <li><strong>Reduce processed carbs:</strong> Cutting back on refined carbohydrates can help with energy levels and weight management</li>
-            <li><strong>Calcium and Vitamin D:</strong> Important for bone health</li>
-            <li><strong>Phytoestrogens:</strong> Foods like soy, flaxseed, and legumes may help some women</li>
-          </ul>
+          <h2>🍎 Nutrition Basics</h2>
+          <p>Blood sugar stability matters more during menopause. Reducing processed carbs and increasing protein can help with energy, weight management, and mood stability.</p>
+          <p><strong>Start with:</strong> Protein at every meal, more vegetables, fewer ultra-processed foods.</p>
         </section>
-
+        
         <section className="foundation-section">
           <h2>😴 Sleep Hygiene</h2>
-          <p>Sleep disruption is one of the most common menopause symptoms. Foundations that help:</p>
-          <ul>
-            <li>Keep your bedroom cool (night sweats are real)</li>
-            <li>Consistent sleep and wake times</li>
-            <li>Limit alcohol, especially in the evening</li>
-            <li>Consider moisture-wicking sleepwear and bedding</li>
-          </ul>
+          <p>Quality sleep becomes harder but more important. Good sleep habits can reduce many other symptoms.</p>
+          <p><strong>Start with:</strong> Consistent sleep/wake times, cool bedroom, limiting screens before bed.</p>
         </section>
-
+        
         <section className="foundation-section">
           <h2>🧘 Stress Management</h2>
-          <p>Chronic stress can worsen menopause symptoms. Consider:</p>
-          <ul>
-            <li>Regular physical activity (natural stress relief)</li>
-            <li>Mindfulness or meditation practices</li>
-            <li>Setting boundaries and saying no</li>
-            <li>Connection with others going through similar experiences</li>
-          </ul>
+          <p>Cortisol and hormones interact significantly. Managing stress can reduce symptom severity.</p>
+          <p><strong>Start with:</strong> Even 10 minutes of breathing exercises, walking, or whatever helps you decompress.</p>
         </section>
-
+        
         <div className="foundation-note">
-          <p><strong>Important:</strong> These foundations can help, but they're not a substitute for medical care if you need it. If your symptoms are significantly affecting your quality of life, professional support — including HRT for many women — can be transformative.</p>
+          <p>These foundations won't fix everything — many women still need medical support. But they provide a strong base that makes other treatments more effective.</p>
         </div>
       </div>
     </div>
@@ -784,41 +719,49 @@ function ResourcesPage() {
   return (
     <div className="content-page">
       <div className="page-content">
-        <h1>Helpful Resources</h1>
+        <h1>Resources</h1>
+        <p className="page-intro">Helpful links and organizations for menopause support.</p>
         
         <section className="resource-section">
-          <h2>Educational Resources</h2>
-          <div className="resource-list">
-            <a href="https://www.menopause.org.au" target="_blank" rel="noopener noreferrer" className="resource-link-card">
-              <h4>Australasian Menopause Society</h4>
-              <p>Evidence-based information and practitioner directory</p>
-            </a>
-            <a href="https://www.themenopausecharity.org" target="_blank" rel="noopener noreferrer" className="resource-link-card">
-              <h4>The Menopause Charity (UK)</h4>
-              <p>Comprehensive resources and support</p>
-            </a>
-            <a href="https://www.menopause.org" target="_blank" rel="noopener noreferrer" className="resource-link-card">
-              <h4>North American Menopause Society</h4>
-              <p>Research and education resources</p>
+          <h2>Crisis Support</h2>
+          <p>If you're experiencing a mental health crisis or need immediate support:</p>
+          <div className="resource-buttons">
+            <a href="https://findahelpline.com" target="_blank" rel="noopener noreferrer" className="resource-button crisis">
+              Find a Helpline
+              <span>Free, confidential crisis support by country</span>
             </a>
           </div>
         </section>
-
+        
         <section className="resource-section">
-          <h2>If You're Struggling</h2>
-          <p>Menopause can significantly impact mental health. If you're experiencing severe anxiety, depression, or thoughts of self-harm, please reach out:</p>
-          <div className="crisis-resources-compact">
-            {Object.entries(crisisResources).map(([key, region]) => (
-              <div key={key} className="crisis-region-compact">
-                <h4>{region.name}</h4>
-                {region.resources.map((r, idx) => (
-                  <div key={idx} className="crisis-item">
-                    <span className="crisis-name">{r.name}</span>
-                    {r.phone && <a href={`tel:${r.phone.replace(/\s/g, '')}`} className="crisis-phone">{r.phone}</a>}
-                  </div>
-                ))}
-              </div>
-            ))}
+          <h2>Menopause Organizations</h2>
+          <div className="resource-list">
+            <div className="resource-item">
+              <h4>Australasian Menopause Society</h4>
+              <p>Professional body with provider directory for Australia/NZ</p>
+              <a href="https://www.menopause.org.au" target="_blank" rel="noopener noreferrer">menopause.org.au</a>
+            </div>
+            <div className="resource-item">
+              <h4>British Menopause Society</h4>
+              <p>UK-based professional organization with resources</p>
+              <a href="https://thebms.org.uk" target="_blank" rel="noopener noreferrer">thebms.org.uk</a>
+            </div>
+            <div className="resource-item">
+              <h4>The Menopause Society (US)</h4>
+              <p>North American menopause organization</p>
+              <a href="https://menopause.org" target="_blank" rel="noopener noreferrer">menopause.org</a>
+            </div>
+          </div>
+        </section>
+        
+        <section className="resource-section">
+          <h2>Information Resources</h2>
+          <div className="resource-list">
+            <div className="resource-item">
+              <h4>Jean Hailes</h4>
+              <p>Comprehensive women's health information (Australia)</p>
+              <a href="https://jeanhailes.org.au" target="_blank" rel="noopener noreferrer">jeanhailes.org.au</a>
+            </div>
           </div>
         </section>
       </div>
@@ -829,23 +772,29 @@ function ResourcesPage() {
 function ContactPage() {
   return (
     <div className="content-page">
-      <div className="page-content narrow">
+      <div className="page-content">
         <h1>Contact Us</h1>
-        <p>Have feedback or questions about Menopause Navigator? We'd love to hear from you.</p>
-        <form className="contact-form" name="contact" method="POST" data-netlify="true">
+        <p className="page-intro">Have feedback or questions about Menopause Navigator?</p>
+        
+        <form className="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
           <input type="hidden" name="form-name" value="contact" />
+          <p style={{display: 'none'}}><input name="bot-field" /></p>
+          
           <div className="form-group">
-            <label htmlFor="name">Your name (optional)</label>
-            <input type="text" id="name" name="name" />
+            <label htmlFor="name">Name</label>
+            <input type="text" id="name" name="name" required />
           </div>
+          
           <div className="form-group">
-            <label htmlFor="email">Your email (optional)</label>
-            <input type="email" id="email" name="email" />
+            <label htmlFor="email">Email</label>
+            <input type="email" id="email" name="email" required />
           </div>
+          
           <div className="form-group">
-            <label htmlFor="message">Your message</label>
+            <label htmlFor="message">Message</label>
             <textarea id="message" name="message" rows="5" required></textarea>
           </div>
+          
           <button type="submit" className="primary-button">Send Message</button>
         </form>
       </div>
@@ -904,7 +853,6 @@ function ResourceDetailModal({ isOpen, onClose, resource, categoryName, location
 
   const renderSummary = (text) => {
     if (!text) return null;
-    // Strip citations from the full text first
     const cleanText = stripCitations(text);
     const lines = cleanText.split('\n');
     return lines.map((line, idx) => {
@@ -1014,9 +962,8 @@ function ResourceDetailModal({ isOpen, onClose, resource, categoryName, location
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [inAssessment, setInAssessment] = useState(false);
-  const [resultsView, setResultsView] = useState('results');
   const [answers, setAnswers] = useState({});
-  const [showResults, setShowResults] = useState(false);
+  const [showSearching, setShowSearching] = useState(false);
   const [location, setLocation] = useState('');
   const [searchPreference, setSearchPreference] = useState('both');
   const [category, setCategory] = useState(null);
@@ -1087,30 +1034,28 @@ function App() {
   const navigate = (page) => { 
     setCurrentPage(page); 
     setInAssessment(false); 
-    setShowResults(false); 
-    setResultsView('results'); 
+    setShowSearching(false);
+    setSearchResults(null);
     window.scrollTo(0, 0); 
   };
   
   const startAssessment = () => {
-    setShowResults(false); 
+    setShowSearching(false); 
     setSearchResults(null);
     setCategory(null); 
     setSearchJobId(null); 
     setSearchStatus(null); 
     setAnswers({});
     setInAssessment(true); 
-    setResultsView('results'); 
     window.scrollTo(0, 0);
   };
 
   const exitAssessment = () => { 
     setInAssessment(false); 
     setCurrentPage('home'); 
-    setShowResults(false); 
+    setShowSearching(false); 
     setAnswers({}); 
     setHighlightCategory(null); 
-    setResultsView('results'); 
   };
 
   const handleAnswer = (questionId, value) => {
@@ -1121,10 +1066,8 @@ function App() {
       const option = q.options.find(o => o.value === value);
       
       if (option?.exclusive) {
-        // Exclusive option clears others
         setAnswers({ ...answers, [questionId]: [value] });
       } else {
-        // Toggle the value, remove exclusive options
         const filtered = current.filter(v => {
           const opt = q.options.find(o => o.value === v);
           return !opt?.exclusive;
@@ -1136,6 +1079,8 @@ function App() {
           setAnswers({ ...answers, [questionId]: [...filtered, value] });
         }
       }
+    } else if (q.type === 'text') {
+      setAnswers({ ...answers, [questionId]: value });
     } else {
       setAnswers({ ...answers, [questionId]: value });
     }
@@ -1145,14 +1090,23 @@ function App() {
     const cat = determineCategory(answers);
     setCategory(cat);
     setHighlightCategory(cat);
-    setShowResults(true);
+    
+    // Get location from Q24
+    const userLocation = answers[24] || '';
+    setLocation(userLocation);
+    
+    // Immediately start search
+    setShowSearching(true);
+    setInAssessment(false);
     window.scrollTo(0, 0);
+    
+    // Trigger the search
+    performSearchWithData(cat, userLocation);
   };
 
-  const performSearch = async () => {
-    if (!location.trim()) return;
+  const performSearchWithData = async (cat, userLocation) => {
+    if (!userLocation.trim()) return;
     
-    const cat = category || determineCategory(answers);
     const catInfo = categoryContent[cat];
     const symptoms = getSymptomProfile(answers);
     const seeking = answers[23] || [];
@@ -1174,7 +1128,7 @@ function App() {
           category: cat,
           categoryName: catInfo.name,
           categoryHelps: catInfo.helps,
-          location: location.trim(),
+          location: userLocation.trim(),
           preference: searchPreference,
           symptoms: symptoms.map(s => s.name),
           seeking,
@@ -1194,22 +1148,20 @@ function App() {
   };
 
   // Check if assessment is complete
-  const requiredQuestions = questions.filter(q => q.type !== 'multi' || q.id === 20 || q.id === 23);
   const answeredCount = Object.keys(answers).filter(k => {
     const val = answers[k];
     if (Array.isArray(val)) return val.length > 0;
-    return val !== undefined && val !== null;
+    return val !== undefined && val !== null && val !== '';
   }).length;
   const totalQuestions = questions.length;
-  const allAnswered = answeredCount >= totalQuestions - 2; // Allow some optional multi-selects
+  
+  // Location (Q24) must be filled
+  const locationFilled = answers[24] && answers[24].trim().length > 0;
+  const allAnswered = answeredCount >= totalQuestions - 2 && locationFilled;
 
   const getContext = () => {
-    if (showResults && resultsView === 'results') { 
-      const cat = category || determineCategory(answers);
-      return { type: 'results', data: { categoryName: categoryContent[cat].name, view: resultsView, setView: setResultsView } }; 
-    }
-    if (showResults && resultsView === 'search') {
-      return { type: 'search', data: { location, onBack: () => setResultsView('results') } };
+    if (showSearching) {
+      return { type: 'search', data: { location, onBack: startAssessment } };
     }
     if (!inAssessment && currentPage !== 'home') { 
       const titles = { 'categories': 'Understanding the Categories', 'how-it-works': 'How This Works', 'foundations': 'Foundations', 'resources': 'Resources', 'contact': 'Contact Us' }; 
@@ -1219,8 +1171,8 @@ function App() {
   };
   const context = getContext();
 
-  // Non-assessment pages
-  if (!inAssessment) {
+  // Non-assessment, non-search pages
+  if (!inAssessment && !showSearching) {
     return (
       <div className="app-wrapper">
         <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={inAssessment} />
@@ -1237,16 +1189,18 @@ function App() {
     );
   }
 
-  // Search view
-  if (showResults && resultsView === 'search') {
+  // Search/Results view
+  if (showSearching) {
     const cat = category || determineCategory(answers);
+    const content = categoryContent[cat];
+    const symptoms = getSymptomProfile(answers);
 
     // Show loading while searching
     if (searchStatus === 'pending' || searchStatus === 'searching') {
       return (
         <div className="app-wrapper">
-          <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={inAssessment} />
-          <ContextNav context="search" data={{ location, onBack: () => { setResultsView('results'); setSearchJobId(null); setSearchStatus(null); } }} />
+          <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={false} />
+          <ContextNav context="search" data={{ location, onBack: startAssessment }} />
           <main className="main-content">
             <div className="search-page">
               <SearchLoading elapsedTime={elapsedTime} />
@@ -1256,18 +1210,53 @@ function App() {
       );
     }
 
-    // Show results
-    if (searchResults) {
+    // Show error
+    if (searchStatus === 'error') {
       return (
         <div className="app-wrapper">
-          <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={inAssessment} />
-          <ContextNav context="search" data={{ location, onBack: () => setResultsView('results') }} />
+          <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={false} />
+          <ContextNav context="search" data={{ location, onBack: startAssessment }} />
+          <main className="main-content">
+            <div className="search-page">
+              <div className="search-error-container">
+                <h2>Something went wrong</h2>
+                <p>{searchError || 'We couldn\'t complete your search. Please try again.'}</p>
+                <button className="primary-button" onClick={() => performSearchWithData(cat, location)}>
+                  Try Again
+                </button>
+                <button className="text-button" onClick={startAssessment}>
+                  Start Over
+                </button>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    // Show results
+    if (searchResults) {
+      const isValidPhone = (phone) => {
+        if (!phone || phone.trim() === '') return false;
+        const lower = phone.toLowerCase();
+        if (lower.includes('not specified') || lower.includes('n/a') || 
+            lower.includes('contact') || lower.includes('website') ||
+            lower.includes('see ') || lower.includes('visit') || 
+            lower.includes('available')) return false;
+        if (!phone.match(/\d/)) return false;
+        return true;
+      };
+
+      return (
+        <div className="app-wrapper">
+          <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={false} />
+          <ContextNav context="search" data={{ location, onBack: startAssessment }} />
           <main className="main-content">
             <div className="search-results-page" id="results-export">
               <div className="results-header-bar">
                 <div className="results-header-content">
-                  <h1>Resources for You</h1>
-                  <p className="results-subtitle">Based on {categoryContent[cat].name} in {location}</p>
+                  <h1>Your Menopause Support Resources</h1>
+                  <p className="results-subtitle">Personalized results for {location}</p>
                 </div>
                 <div className="results-actions">
                   <button className="secondary-button" onClick={() => window.print()}>
@@ -1288,37 +1277,25 @@ function App() {
                 </div>
               )}
               
-              {searchResults.categories?.map((cat, idx) => (
+              {searchResults.categories?.map((resCat, idx) => (
                 <div key={idx} className="results-category">
-                  <h2>{stripCitations(cat.name)}</h2>
+                  <h2>{stripCitations(resCat.name)}</h2>
                   <div className="resources-grid">
-                    {cat.resources?.map((resource, ridx) => {
-                      const isValidPhone = (phone) => {
-                        if (!phone || phone.trim() === '') return false;
-                        const lower = phone.toLowerCase();
-                        if (lower.includes('not specified') || lower.includes('n/a') || 
-                            lower.includes('contact') || lower.includes('website') ||
-                            lower.includes('see ') || lower.includes('visit') || 
-                            lower.includes('available')) return false;
-                        if (!phone.match(/\d/)) return false;
-                        return true;
-                      };
-                      return (
-                        <div key={ridx} className="resource-card">
-                          <div className="resource-card-header">
-                            <h3>{stripCitations(resource.name)}</h3>
-                            {resource.type && <span className="resource-type-badge">{stripCitations(resource.type)}</span>}
-                          </div>
-                          <p className="resource-description">{stripCitations(resource.description)}</p>
-                          {resource.notes && <p className="resource-notes">{stripCitations(resource.notes)}</p>}
-                          <div className="resource-actions">
-                            <button onClick={() => openDetailModal(resource, cat.name)} className="resource-detail-btn">More Detail</button>
-                            {resource.url && <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">Visit Website →</a>}
-                            {isValidPhone(resource.phone) && <a href={`tel:${resource.phone.replace(/\s/g, '')}`} className="resource-phone">{stripCitations(resource.phone)}</a>}
-                          </div>
+                    {resCat.resources?.map((resource, ridx) => (
+                      <div key={ridx} className="resource-card">
+                        <div className="resource-card-header">
+                          <h3>{stripCitations(resource.name)}</h3>
+                          {resource.type && <span className="resource-type-badge">{stripCitations(resource.type)}</span>}
                         </div>
-                      );
-                    })}
+                        <p className="resource-description">{stripCitations(resource.description)}</p>
+                        {resource.notes && <p className="resource-notes">{stripCitations(resource.notes)}</p>}
+                        <div className="resource-actions">
+                          <button onClick={() => openDetailModal(resource, resCat.name)} className="resource-detail-btn">More Detail</button>
+                          {resource.url && <a href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-link">Visit Website →</a>}
+                          {isValidPhone(resource.phone) && <a href={`tel:${resource.phone.replace(/\s/g, '')}`} className="resource-phone">{stripCitations(resource.phone)}</a>}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -1331,6 +1308,54 @@ function App() {
               
               <div className="results-disclaimer">
                 <p>These are options to explore, not recommendations. Please verify before contacting any provider.</p>
+              </div>
+
+              {/* Category Summary Section - At Bottom */}
+              <div className="results-understanding-section">
+                <h2>Understanding Your Results</h2>
+                <div className="category-summary-card" style={{ borderLeftColor: content.color }}>
+                  <div className="category-summary-header">
+                    <span className="category-dot" style={{ background: content.color }}></span>
+                    <div>
+                      <h3>{content.name}</h3>
+                      <p className="category-description">{content.description}</p>
+                    </div>
+                  </div>
+                  <p className="category-positioning">{content.positioning}</p>
+                  
+                  {content.urgent && (
+                    <div className="urgent-notice">
+                      <p>We recommend seeking specialist guidance for your specific situation.</p>
+                    </div>
+                  )}
+                  
+                  {symptoms.length > 0 && (
+                    <div className="symptom-summary">
+                      <h4>Your Primary Concerns</h4>
+                      <ul>
+                        {symptoms.map((s, idx) => (
+                          <li key={idx}>{s.name}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  <div className="category-details-grid">
+                    <div className="category-detail-box">
+                      <h4>What often helps</h4>
+                      <ul>{content.helps.map((item, idx) => <li key={idx}>{item}</li>)}</ul>
+                    </div>
+                    <div className="category-detail-box">
+                      <h4>What to watch for</h4>
+                      <ul>{content.monitor.map((item, idx) => <li key={idx}>{item}</li>)}</ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="understanding-footer">
+                  <p>Want to explore different types of support? <button className="text-button" onClick={startAssessment}>Take the assessment again</button></p>
+                  <button className="text-button" onClick={() => navigate('categories')}>Learn about all categories →</button>
+                </div>
               </div>
             </div>
           </main>
@@ -1345,118 +1370,8 @@ function App() {
       );
     }
 
-    // Search input form
-    return (
-      <div className="app-wrapper">
-        <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={inAssessment} />
-        <ContextNav context="results" data={{ categoryName: categoryContent[cat].name, view: resultsView, setView: setResultsView }} />
-        <main className="main-content">
-          <div className="search-page">
-            <div className="search-form-container">
-              <h1>Find Resources</h1>
-              <p>We'll search for menopause-trained doctors, specialists, and support services in your area.</p>
-              
-              <div className="search-form">
-                <div className="form-group">
-                  <label>Your location:</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g., Auckland, NZ or Sydney, Australia" 
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="location-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Type of support:</label>
-                  <div className="preference-options">
-                    {['both', 'local', 'remote'].map(pref => (
-                      <button 
-                        key={pref} 
-                        className={`preference-option ${searchPreference === pref ? 'selected' : ''}`} 
-                        onClick={() => setSearchPreference(pref)}
-                      >
-                        <span className="preference-icon">{pref === 'both' ? '🌐' : pref === 'local' ? '📍' : '💻'}</span>
-                        <span>{pref === 'both' ? 'Both' : pref === 'local' ? 'In-person' : 'Remote'}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {searchError && <div className="search-error"><p>{searchError}</p></div>}
-                <button className="primary-button large full-width" onClick={performSearch} disabled={!location.trim()}>
-                  Search for Resources
-                </button>
-                <div className="search-note">
-                  <p>This comprehensive search can take 2-3 minutes. Please be patient.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // Results summary
-  if (showResults && resultsView === 'results') {
-    const cat = category || determineCategory(answers);
-    const content = categoryContent[cat];
-    const symptoms = getSymptomProfile(answers);
-    
-    return (
-      <div className="app-wrapper">
-        <TopNav currentPage={currentPage} onNavigate={navigate} onStartAssessment={startAssessment} inAssessment={inAssessment} />
-        <ContextNav context="results" data={{ categoryName: content.name, view: resultsView, setView: setResultsView }} />
-        <main className="main-content">
-          <div className="results-page">
-            <div className="results-top">
-              <div className="results-main">
-                <div className="results-header">
-                  <span className="results-label">Your Results</span>
-                  <h1>{content.name}</h1>
-                </div>
-                <div className="results-positioning"><p>{content.positioning}</p></div>
-                {content.urgent && <div className="urgent-notice"><p>We recommend seeking specialist guidance for your specific situation.</p></div>}
-                
-                {symptoms.length > 0 && (
-                  <div className="symptom-summary">
-                    <h3>Your Primary Concerns</h3>
-                    <ul>
-                      {symptoms.map((s, idx) => (
-                        <li key={idx}>{s.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-              <div className="results-cta-box">
-                <h3>Find Resources</h3>
-                <p>We'll build a personalized report of menopause support in your area.</p>
-                <button className="primary-button large full-width" onClick={() => setResultsView('search')}>
-                  Build My Report →
-                </button>
-              </div>
-            </div>
-            
-            <div className="results-details">
-              <div className="results-section">
-                <h2>What often helps</h2>
-                <ul>{content.helps.map((item, idx) => <li key={idx}>{item}</li>)}</ul>
-              </div>
-              <div className="results-section">
-                <h2>What to watch for</h2>
-                <ul>{content.monitor.map((item, idx) => <li key={idx}>{item}</li>)}</ul>
-              </div>
-            </div>
-            
-            <div className="results-footer">
-              <button className="text-button" onClick={() => navigate('categories')}>View all categories →</button>
-              <p className="disclaimer">This is not a diagnosis. Please consult a healthcare provider for clinical assessment.</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
+    // Fallback - shouldn't reach here
+    return null;
   }
 
   // Assessment - All questions on one page, grouped by section
@@ -1490,7 +1405,7 @@ function App() {
                   const idx = questions.findIndex(qu => qu.id === qId);
                   
                   return (
-                    <div key={q.id} className={`question-row ${answers[q.id] !== undefined ? 'answered' : ''}`}>
+                    <div key={q.id} className={`question-row ${answers[q.id] !== undefined && answers[q.id] !== '' ? 'answered' : ''}`}>
                       <div className="question-number">{idx + 1}</div>
                       <div className="question-content">
                         <p className="question-text-inline">{q.text}</p>
@@ -1541,6 +1456,18 @@ function App() {
                             })}
                           </div>
                         )}
+                        
+                        {q.type === 'text' && (
+                          <div className="answer-text-input">
+                            <input 
+                              type="text"
+                              placeholder={q.placeholder || ''}
+                              value={answers[q.id] || ''}
+                              onChange={(e) => handleAnswer(q.id, e.target.value)}
+                              className="location-input"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -1555,7 +1482,7 @@ function App() {
               onClick={handleSubmitAssessment}
               disabled={!allAnswered}
             >
-              {allAnswered ? 'See My Results →' : `Answer more questions (${answeredCount}/${totalQuestions})`}
+              {allAnswered ? 'Find My Resources →' : `Complete all questions (${answeredCount}/${totalQuestions})`}
             </button>
             <p className="assessment-note">Your answers are private and never stored.</p>
           </div>
